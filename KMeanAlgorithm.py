@@ -1,9 +1,19 @@
+"""
+Code for KMean Algorithm
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 import operator
 import random as rd
 import KNNAlgorithm as kN
+from operator import attrgetter
 
+"""
+KMean main function is executed here, first random centroids are created, then relocated to have 
+an even distribution of the centroids for data to be assign in 4 clusters, then, each point is located
+to the closest cluster. After,the centroids are re-located according to their points. The cluster are label
+to finally plot the plot results 
+"""
 
 class KMeanFunction:
     def __init__(self, num_of_centroids, pointsListTrain, pointsListTest):
@@ -112,15 +122,22 @@ class KMeanFunction:
                 centroid.actualPoints = []
 
     def label_centroids(self):
-        for i, centroid in enumerate(self.centroids):
-            if i == 0:
-                centroid.label = "Grupo 1"
-            elif i == 1:
-                centroid.label = "Grupo 2"
-            elif i == 2:
-                centroid.label = "Grupo 3"
-            elif i == 3:
-                centroid.label = "Grupo 4"
+
+        mynewC = []
+        myCentroids = self.centroids
+        maxV = max(myCentroids, key=attrgetter('position'))
+        maxV.label = "Low Load"
+        minV = min(myCentroids, key=attrgetter('position'))
+        minV.label = "High Load"
+
+        for centroid in myCentroids:
+            if centroid.label == 'none':
+                mynewC.append(centroid)
+
+        maxV = max(mynewC, key=attrgetter('position'))
+        maxV.label = "Generator Down"
+        minV = min(mynewC, key=attrgetter('position'))
+        minV.label = "Line Down"
 
     def plot_graph(self,type):
 
@@ -128,13 +145,15 @@ class KMeanFunction:
             plt.scatter(c.position[0], c.position[1], marker='o', color=c.color, s=75)
             x_cors = [x[0] for x in c.actualPoints]
             y_cors = [y[1] for y in c.actualPoints]
-            plt.scatter(x_cors, y_cors, marker='.', color=c.color)
+            plt.scatter(x_cors, y_cors, marker='.', color=c.color, label=c.label)
+            plt.legend(loc='upper left')
 
         title = type
         plt.xlabel('Voltage')
         plt.ylabel('Angle')
         plt.title(title)
         plt.savefig('{}.png'.format(title))
+        plt.clf()
 
 
 class Centroid:
@@ -144,5 +163,3 @@ class Centroid:
         self.pastPoints = []
         self.color = None
         self.label = 'none'
-
-
