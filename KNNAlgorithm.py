@@ -1,34 +1,42 @@
 import numpy as np
 from collections import Counter
+import KMeanAlgorithm as KM
 
 
 class KNNFunction:
-    def __init__(self, pointsListTest, centroids, k=5):
+    def __init__(self, dataListTest, centroids):
         print('KNN Algorithm loading...')
-        print('This will take a while, in the meantime imagine this:')
-        print('You are in a Mexican beach with a señorita and a bucket of beer')
-        print("listening to Humperdinck's Can't Take My Eyes Off You")
-        self.find_neighbour(pointsListTest, centroids, k)
+        k = 5
+        self.find_neighbour(dataListTest, centroids, k)
 
-    def find_neighbour(self, dataTrain, centroids, jury):
-        for point, _ in enumerate(dataTrain):
-            dist = []
+    def find_neighbour(self, dataListTest, centroids, jury):
+        euclidean = 0
+        dist = []
+
+        for status in dataListTest:
+            state = KM.extract_point(status)
             for centroid in centroids:
-                for x, _ in enumerate(centroid.actualPoints):
-                    euclidean = np.linalg.norm(np.array(dataTrain[point]) - np.array(centroid.actualPoints[x]))
-                    dist.append([euclidean, centroid.label])
-            self.trial(centroids, sorted(dist)[:jury], dataTrain[point])
+                for point in centroid.actualPoints:
+                    for bus in range(9):
+                        euclidean += np.square(point[bus][0] - state[bus][0]) + np.square(point[bus][1] - state[bus][1])
+                    dist.append([np.sqrt(euclidean), centroid])
+                    euclidean = 0
+            trial(sorted(dist)[:jury], state)
+            dist = []
 
-    def trial(self, centroids, list, point):
+        print('KNN Algorithm finished the results are:')
+        print()
+        printResults(centroids)
 
-        toTrial = []
-        for pledge, _ in enumerate(list):
-            toTrial.append(list[pledge][1])
-        verdict = max(Counter(toTrial))
-        self.assign_to_group(centroids,verdict, point )
+def trial(distance, status):
+    toTrial = []
+    for pledge, _ in enumerate(distance):
+        toTrial.append(distance[pledge][1])
+    verdict = max(Counter(toTrial))
+    verdict.actualPoints.append(status)
 
-    def assign_to_group(self, centroids, verdict, point):
-        for centroid in centroids:
-            if centroid.label == verdict:
-                centroid.actualPoints.append(point)
-                break
+def printResults(centroids):
+    for centroid in centroids:
+        print("Centroid: " + str(centroid.label) + " has: " + str(len(centroid.actualPoints)) + ' status')
+        print()
+        print()
