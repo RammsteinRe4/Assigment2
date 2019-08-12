@@ -2,11 +2,11 @@
 Code for KMean Algorithm
 """
 import numpy as np
-import matplotlib.pyplot as plt
 import operator
 import random as rd
 import KNNAlgorithm as kN
-from operator import attrgetter
+import matplotlib.pyplot as plt
+import cmath
 
 """
 KMean main function is executed here, first random centroids are created, then relocated to have 
@@ -15,151 +15,285 @@ to the closest cluster. After,the centroids are re-located according to their po
 to finally plot the plot results 
 """
 
+
+class Centroid:
+    def __init__(self):
+        self.position = []
+        self.actualPoints = []
+        self.pastPoints = []
+        self.color = None
+        self.label = 'none'
+        self.aV = 0
+        self.aA = 0
+
+        for _ in range(9):
+            self.position.append(([rd.uniform(0.0, 1.5), rd.uniform(0.0, 1.5)]))
+
+
+def extract_point(status):
+    """Extract voltage and angle for each bus, 9 buses are a status"""
+    points = []
+
+    for bus in status:
+        points.append([bus.voltage, bus.angle])
+
+    return points
+
+
+def getPosition(status):
+    position = []
+
+    for bus in status:
+        position.append([bus.voltage, bus.angle])
+
+    return position
+
+
 class KMeanFunction:
-    def __init__(self, num_of_centroids, pointsListTrain, pointsListTest):
+    def __init__(self, num_of_centroids, dataListTrain, dataListTest):
         print('K-Means Algorithm loading...')
+
+        """Initialize centroids"""
         self.num_of_centroids = num_of_centroids
         self.centroids = []
+        for _ in range(num_of_centroids):
+            self.centroids.append(Centroid())
 
-        for x in range(num_of_centroids):
-            self.centroids.append(Centroid(np.array([rd.uniform(0.0, 1.5), rd.uniform(0.0, 1.5)])))
-
+        """Assign colors to centroids"""
         color_centroids = ("red", "green", "blue", "orange")
         for pos, centroid in enumerate(self.centroids):
             centroid.color = color_centroids[pos]
 
-        self.locate_centroid(pointsListTrain)
-        self.point_to_cluster(pointsListTrain, train=True)
-        #self.point_to_cluster(pointsListTrain, train=False)
+        self.locate_centroid(dataListTrain)
+        self.point_to_cluster(dataListTrain, train=True)
         self.label_centroids()
-        self.plot_graph('KMeans Algorithm')
-        print('K-Mean Algorithm finished, plot has been same in program folder')
-        kN.KNNFunction(pointsListTest, self.centroids)
-        self.plot_graph('KNN Algorithm')
-        print('KNN Algorithm finished, plot has been same in program folder')
-        print('Process Finished, this was AI :)')
+        kN.KNNFunction(dataListTest, self.centroids)
 
-    def locate_centroid(self, pointList, item=0):
+    def locate_centroid(self, dataListTrain):
+        tempSum1 = 0
+        tempSum2 = 0
+        tempSum3 = 0
+        tempSum4 = 0
+        LAPD = 0
+        dist = {}
 
-        dist = []
-        longo = max(pointList)
 
-        for _ in self.centroids:
-            if item == 0:
-                self.centroids[item].position = longo
-                item += 1
+        #For centroid 1
 
-            elif item == 1:
-                longo = min(pointList)
-                self.centroids[item].position = longo
-                item += 1
+        for status in dataListTrain:
+            pointsList = extract_point(status)
+            for points in pointsList:
+                tempSum1 += np.square(self.centroids[0].position[LAPD][0] - points[0]) + np.square(self.centroids[0].position[LAPD][1] - points[1])
+                LAPD += 1
+            tempSum1 = np.sqrt(tempSum1)
+            dist[status] = tempSum1
+            tempSum1 = 0
+            LAPD = 0
 
-            elif item > 1:
-                for index, _ in enumerate(pointList):
-                    fur_point = pointList[index]
-                    cen_point = self.centroids[item-1].position
-                    temp = np.linalg.norm(np.array(cen_point) - np.array(fur_point))
-                    dist.append(temp)
-                    comp = max(dist)
-                    if temp == comp:
-                        self.centroids[item].position = fur_point
-                item += 1
+        newPosition = getPosition(max(dist.items(), key=operator.itemgetter(1))[0])
+        self.centroids[0].position = newPosition
+        dist = {}
 
-    def point_to_cluster(self, pointsList, train):
+        #For centroid 2
+
+        for status in dataListTrain:
+            pointsList = extract_point(status)
+            for points in pointsList:
+                tempSum1 += np.square(self.centroids[0].position[LAPD][0] - points[0]) + np.square(self.centroids[0].position[LAPD][1] - points[1])
+                tempSum2 += np.square(self.centroids[1].position[LAPD][0] - points[0]) + np.square(self.centroids[1].position[LAPD][1] - points[1])
+                LAPD += 1
+            dist[status] = (np.sqrt(tempSum1) + np.sqrt(tempSum2)) / 2
+            tempSum1 = 0
+            tempSum2 = 0
+            LAPD = 0
+
+        newPosition = getPosition(max(dist.items(), key=operator.itemgetter(1))[0])
+        self.centroids[1].position = newPosition
+        dist = {}
+
+        #For centroid 3
+
+        for status in dataListTrain:
+            pointsList = extract_point(status)
+            for points in pointsList:
+                tempSum1 += np.square(self.centroids[0].position[LAPD][0] - points[0]) + np.square(self.centroids[0].position[LAPD][1] - points[1])
+                tempSum2 += np.square(self.centroids[1].position[LAPD][0] - points[0]) + np.square(self.centroids[1].position[LAPD][1] - points[1])
+                tempSum3 += np.square(self.centroids[2].position[LAPD][0] - points[0]) + np.square(self.centroids[2].position[LAPD][1] - points[1])
+                LAPD += 1
+            dist[status] = (np.sqrt(tempSum1) + np.sqrt(tempSum2) + np.sqrt(tempSum3)) / 3
+            tempSum1 = 0
+            tempSum2 = 0
+            tempSum3 = 0
+            LAPD = 0
+
+        newPosition = getPosition(max(dist.items(), key=operator.itemgetter(1))[0])
+        self.centroids[2].position = newPosition
+        dist = {}
+
+        # For centroid 4
+
+        for status in dataListTrain:
+            pointsList = extract_point(status)
+            for points in pointsList:
+                tempSum1 += np.square(self.centroids[0].position[LAPD][0] - points[0]) + np.square(self.centroids[0].position[LAPD][1] - points[1])
+                tempSum2 += np.square(self.centroids[1].position[LAPD][0] - points[0]) + np.square(self.centroids[1].position[LAPD][1] - points[1])
+                tempSum3 += np.square(self.centroids[2].position[LAPD][0] - points[0]) + np.square(self.centroids[2].position[LAPD][1] - points[1])
+                tempSum4 += np.square(self.centroids[3].position[LAPD][0] - points[0]) + np.square(self.centroids[3].position[LAPD][1] - points[1])
+                LAPD += 1
+            dist[status] = (np.sqrt(tempSum1) + np.sqrt(tempSum2) + np.sqrt(tempSum3) + np.sqrt(tempSum4)) / 4
+            tempSum1 = 0
+            tempSum2 = 0
+            tempSum3 = 0
+            tempSum4 = 0
+            LAPD = 0
+
+        newPosition = getPosition(max(dist.items(), key=operator.itemgetter(1))[0])
+        self.centroids[3].position = newPosition
+
+        return print()
+
+    def point_to_cluster(self, dataListTrain, train):
+        """Given points are assign to each cluster"""
         halt = False
+        final = 0
 
         while not halt:
-            for point in pointsList:
-                toPoint = [point[0], point[1]]
-                closest_cluster = self.assign_to_cluster(toPoint)
-                closest_cluster.actualPoints.append(toPoint)
+            for status in dataListTrain:
+                points = extract_point(status)
+                closest_cluster = self.assign_to_cluster(points)
+                closest_cluster.actualPoints.append(points)
 
-            if len([c for c in self.centroids if c.actualPoints == c.pastPoints]) == self.num_of_centroids:
+            if self.checkStop():
                 halt = True
-                if train:
-                    self.relocation(reset=False)
             elif train:
                 self.relocation()
 
-    def assign_to_cluster(self, point):
+    def checkStop(self):
+        stop = False
+        if self.centroids[0].actualPoints == self.centroids[0].pastPoints:
+            if self.centroids[1].actualPoints == self.centroids[1].pastPoints:
+                if self.centroids[2].actualPoints == self.centroids[2].pastPoints:
+                    if self.centroids[3].actualPoints == self.centroids[3].pastPoints:
+                        stop = True
 
+        return stop
+
+    def assign_to_cluster(self, points):
+        """Find the closet closer to the points according to the euclidean distance"""
         dist = {}
-        x = 0
+        tempSum = 0
+        LAPD = 0
 
         for centroid in self.centroids:
-            dist[centroid] = np.linalg.norm(self.centroids[x].position - np.array(point))
-            x += 1
+            for point in points:
+                tempSum += np.square(centroid.position[LAPD][0] - point[0]) + np.square(centroid.position[LAPD][1] - point[1])
+                LAPD += 1
+            tempSum = np.sqrt(tempSum)
+            dist[centroid] = tempSum
+            LAPD = 0
+            tempSum = 0
 
         close_cluster = min(dist.items(), key=operator.itemgetter(1))[0]
 
         return close_cluster
 
-    def relocation(self, pre_x=0, pre_y=0, reset=True):
+    def relocation(self):
+        newPosition = []
+        pre_x = [0] * 9
+        pre_y = [0] * 9
 
         for centroid in self.centroids:
+            if centroid.actualPoints:
+                for pointIn in centroid.actualPoints:
+                    for bus in range(9):
+                        pre_x[bus] += pointIn[bus][0]
+                        pre_y[bus] += pointIn[bus][1]
+                for bus in range(9):
+                    newPosition.append([pre_x[bus] / len(centroid.actualPoints), pre_y[bus] / len(centroid.actualPoints)])
+                centroid.position = newPosition
+                pre_x = [0]*9
+                pre_y = [0]*9
+                newPosition = []
+
             centroid.pastPoints = centroid.actualPoints
-
-            x = 0
-            for _ in centroid.actualPoints:
-                pre_x += float(centroid.actualPoints[x][0])
-                x += 1
-
-            y = 0
-            for _ in centroid.actualPoints:
-                pre_y += float(centroid.actualPoints[y][1])
-                y += 1
-
-            try:
-                centroid.position[0] = pre_x / x
-                centroid.position[1] = pre_y / y
-            except:
-                pass
-
-            pre_x = 0
-            pre_y = 0
-
-            if reset:
-                centroid.actualPoints = []
+            centroid.actualPoints = []
 
     def label_centroids(self):
+        #For high and low load
 
-        mynewC = []
-        myCentroids = self.centroids
-        maxV = max(myCentroids, key=attrgetter('position'))
-        maxV.label = "Low Load"
-        minV = min(myCentroids, key=attrgetter('position'))
-        minV.label = "High Load"
+        temp = 0
+        te = {}
 
-        for centroid in myCentroids:
+        for centroid in self.centroids:
+            for point in centroid.actualPoints:
+                temp += point[0][1] - point[3][1]
+            te[centroid] = temp / len(centroid.actualPoints)
+            temp = 0
+
+        tempLoad = max(te.items(), key=operator.itemgetter(1))[0]
+        tempLoad.label = 'High Load'
+        tempLoad = min(te.items(), key=operator.itemgetter(1))[0]
+        tempLoad.label = 'Low Load'
+
+        #For Generator Down
+
+        temp = 0
+        te = {}
+
+        for centroid in self.centroids:
+            for point in centroid.actualPoints:
+                temp += point[2][1] - point[5][1]
+            te[centroid] = temp / len(centroid.actualPoints)
+            temp = 0
+
+        tempLoad = min(te.items(), key=operator.itemgetter(1))[0]
+        tempLoad.label = 'Generator Down'
+
+        #For Line Down
+
+        #By Default
+
+        for centroid in self.centroids:
             if centroid.label == 'none':
-                mynewC.append(centroid)
-
-        maxV = max(mynewC, key=attrgetter('position'))
-        maxV.label = "Generator Down"
-        minV = min(mynewC, key=attrgetter('position'))
-        minV.label = "Line Down"
-
-    def plot_graph(self,type):
-
-        for i, c in enumerate(self.centroids):
-            plt.scatter(c.position[0], c.position[1], marker='o', color=c.color, s=75)
-            x_cors = [x[0] for x in c.actualPoints]
-            y_cors = [y[1] for y in c.actualPoints]
-            plt.scatter(x_cors, y_cors, marker='.', color=c.color, label=c.label)
-            plt.legend(loc='upper left')
-
-        title = type
-        plt.xlabel('Voltage')
-        plt.ylabel('Angle')
-        plt.title(title)
-        plt.savefig('{}.png'.format(title))
-        plt.clf()
+                centroid.label = "Line Down"
+                break
 
 
-class Centroid:
-    def __init__(self, position):
-        self.position = position
-        self.actualPoints = []
-        self.pastPoints = []
-        self.color = None
-        self.label = 'none'
+        #By Calculation
+        # temp = 0
+        # te = {}
+        # PtR1 = 0
+        # PtR2 = 0
+        #
+        # for centroid in self.centroids:
+        #     for point in centroid.actualPoints:
+        #         PtR1 = cmath.rect(point[4][0], (point[4][1] * np.pi)/180)
+        #         PtR2 = cmath.rect(point[5][0], (point[5][1] * np.pi)/180)
+        #         temp += PtR1 - PtR2
+        #     te[centroid] = np.absolute(temp / len(centroid.actualPoints))
+        #     temp = 0
+
+        self.printResults()
+
+    def printResults(self):
+        for centroid in self.centroids:
+            print("Centroid: " + str(centroid.label) + " has: " + str(len(centroid.actualPoints)) + ' status')
+            print()
+            print()
+            #self.plot_graph()
+
+
+    def plot_graph(self):
+        for bus in range(9):
+            title = 'Bus ' + str(bus + 1)
+            for centroid in self.centroids:
+                plt.scatter(centroid.position[bus][0], centroid.position[bus][1], marker='o',
+                            color=centroid.color, s=75)
+                for point in centroid.actualPoints:
+                    x_cors = point[bus][0]
+                    y_cors = point[bus][1]
+                    plt.scatter(x_cors, y_cors, marker='.', color=centroid.color)
+            plt.xlabel('Voltage')
+            plt.ylabel('Angle')
+            plt.title(title)
+            plt.show()
