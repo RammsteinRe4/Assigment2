@@ -1,12 +1,15 @@
 """
-Code for KMean Algorithm
+
+Code for KMean Algorithm """
+"""Assignment II of Computer Applications for Powers Systems (CAPS) VT-19
+Group 3:
+Héctor Manuel Martínez Álvarez 910218
+Cristhian Carim Jiménez Saldaña 931023 0397
 """
 import numpy as np
 import operator
 import random as rd
 import KNNAlgorithm as kN
-import matplotlib.pyplot as plt
-import cmath
 
 """
 KMean main function is executed here, first random centroids are created, then relocated to have 
@@ -28,6 +31,9 @@ class Centroid:
 
         for _ in range(9):
             self.position.append(([rd.uniform(0.0, 1.5), rd.uniform(0.0, 1.5)]))
+
+        self.inKNN = 0
+        self.defPost = [[1.0, 0.0], [0.9999999999999998, -21.234761856647637], [1.0, -25.650748058437067], [0.8935596216674565, -15.451415250157352], [0.853067982447191, -28.140322613737737], [0.9553350523459541, -28.6394349989884], [0.9057645575872234, -33.42412682343994], [0.9375200518487891, -27.4730883527749], [0.8021914969333384, -30.237854437768455]]
 
 
 def extract_point(status):
@@ -107,8 +113,9 @@ class KMeanFunction:
             tempSum2 = 0
             LAPD = 0
 
-        newPosition = getPosition(max(dist.items(), key=operator.itemgetter(1))[0])
-        self.centroids[1].position = newPosition
+        newPosition = getPosition(min(dist.items(), key=operator.itemgetter(1))[0])
+        if newPosition > self.centroids[1].defPost:
+            self.centroids[1].position = self.centroids[1].defPost
         dist = {}
 
         #For centroid 3
@@ -243,57 +250,41 @@ class KMeanFunction:
         for centroid in self.centroids:
             for point in centroid.actualPoints:
                 temp += point[2][1] - point[5][1]
-            te[centroid] = temp / len(centroid.actualPoints)
+                te[centroid] = temp / len(centroid.actualPoints)
             temp = 0
-
         tempLoad = min(te.items(), key=operator.itemgetter(1))[0]
         tempLoad.label = 'Generator Down'
+
 
         #For Line Down
 
         #By Default
 
         for centroid in self.centroids:
-            if centroid.label == 'none':
-                centroid.label = "Line Down"
-                break
+         if centroid.label == 'none':
+             centroid.label = "Line Down"
+             break
 
 
         #By Calculation
-        # temp = 0
-        # te = {}
-        # PtR1 = 0
-        # PtR2 = 0
-        #
-        # for centroid in self.centroids:
-        #     for point in centroid.actualPoints:
-        #         PtR1 = cmath.rect(point[4][0], (point[4][1] * np.pi)/180)
-        #         PtR2 = cmath.rect(point[5][0], (point[5][1] * np.pi)/180)
-        #         temp += PtR1 - PtR2
-        #     te[centroid] = np.absolute(temp / len(centroid.actualPoints))
-        #     temp = 0
 
+        temp = 0
+        te = {}
+        PtR1 = 0
+        PtR2 = 0
+
+        # for centroid in self.centroids:
+        #      for point in centroid.actualPoints:
+        #          PtR1 = cmath.rect(point[4][0], (point[4][1] * np.pi)/180)
+        #          PtR2 = cmath.rect(point[5][0], (point[5][1] * np.pi)/180)
+        #          temp += PtR1 - PtR2
+        #      te[centroid] = np.absolute(temp / len(centroid.actualPoints))
+        #      temp = 0
+        # newL = te
+        #
         self.printResults()
 
     def printResults(self):
         for centroid in self.centroids:
             print("Centroid: " + str(centroid.label) + " has: " + str(len(centroid.actualPoints)) + ' status')
             print()
-            print()
-            #self.plot_graph()
-
-
-    def plot_graph(self):
-        for bus in range(9):
-            title = 'Bus ' + str(bus + 1)
-            for centroid in self.centroids:
-                plt.scatter(centroid.position[bus][0], centroid.position[bus][1], marker='o',
-                            color=centroid.color, s=75)
-                for point in centroid.actualPoints:
-                    x_cors = point[bus][0]
-                    y_cors = point[bus][1]
-                    plt.scatter(x_cors, y_cors, marker='.', color=centroid.color)
-            plt.xlabel('Voltage')
-            plt.ylabel('Angle')
-            plt.title(title)
-            plt.show()
