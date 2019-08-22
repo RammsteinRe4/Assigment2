@@ -1,8 +1,8 @@
 """
 Assignment II of Computer Applications for Powers Systems (CAPS) VT-19
 Group 3:
-Héctor Manuel Martínez Álvarez
-Christian Carim Jiménez Saldaña
+Héctor Manuel Martínez Álvarez 910218
+Cristhian Carim Jiménez Saldaña 931023 0397
 
 Some instructions: The default code will classify the learning set (analog_values.csv) with KMean Algorithm, then,
 it will run the algorithm KNN to classify the test set (measurements.csv). The results will be save in a .png images,
@@ -72,7 +72,6 @@ def extract_data(filePath):
             dataList.pop(0)
 
     return finalList
-
 
 dataListTrain = extract_data('measurements.csv')
 dataListTest = extract_data('analog_values.csv')
