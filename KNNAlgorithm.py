@@ -24,7 +24,7 @@ class KNNFunction:
             trial(sorted(dist)[:jury], state)
             dist = []
 
-        print('KNN Algorithm finished the results are:')
+        print('KNN Algorithm finished the results are show next, but first...')
         print()
         printResults(centroids)
 
@@ -34,9 +34,19 @@ def trial(distance, status):
         toTrial.append(distance[pledge][1])
     verdict = max(Counter(toTrial))
     verdict.actualPoints.append(status)
+    verdict.inKNN += 1
 
 def printResults(centroids):
     for centroid in centroids:
-        print("Centroid: " + str(centroid.label) + " has: " + str(len(centroid.actualPoints)) + ' status')
-        print()
-        print()
+            print("Centroid: " + str(centroid.label) + " has: " + str(len(centroid.actualPoints)) + ' status')
+            print('Centroid Location: ' + str(centroid.position))
+            print('After KNN Algorithm ' + str(centroid.inKNN) + " status more were added")
+            print()
+
+    decision = input('Do you want to display all elements assigned to each centroid? (1 = Yes)')
+    if int(decision) == 1:
+        for centroid in centroids:
+            print('Centroid Location: ' + str(centroid.position))
+            for status, i in enumerate(centroid.actualPoints):
+                print('Status' + str(centroid.position))
+            print()
